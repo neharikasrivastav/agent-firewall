@@ -8,7 +8,7 @@
 - **quarantines poisoned tools**: MCP tool descriptions that carry hidden instructions, and tools whose definitions change after first use ("rug pulls")
 - **logs every decision** to SQLite, with a live approval dashboard
 
-**Try it in the browser:** the [playground](#playground) runs the real detector and policy engine on attack and benign scenarios. [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/neharikasrivastav/agent-firewall)
+**Live demo: [agent-firewall-lwzj.onrender.com](https://agent-firewall-lwzj.onrender.com)**. Pick an attack (poisoned web page, phishing email, invisible Unicode) and watch the real detector and policy engine stop it. It's on a free plan, so the first visit after a quiet spell takes about a minute to wake up.
 
 ```
  agent (Claude Code / Desktop / any MCP client)
@@ -96,7 +96,7 @@ For Claude Desktop, add the same command to `claude_desktop_config.json` under `
 
 `agent_firewall/playground.py` is a small, stateless web app for showing the firewall to people who won't install it. Pick a scenario (poisoned recipe page, phishing email, invisible-Unicode newsletter, white-on-white travel page, or a benign one) or paste your own content, then choose the call a hijacked agent would make next. The page shows the detector's signals, what the model sees after sanitising, and the policy decision. It never runs a real tool and keeps no state between requests, so it's safe to host publicly.
 
-To host it for free, click **Deploy to Render** above (or create a Blueprint from `render.yaml`). The free plan sleeps after 15 idle minutes, so the first visit after that takes about a minute.
+To host your own copy for free: [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/neharikasrivastav/agent-firewall) (or create a Blueprint from `render.yaml`). The free plan sleeps after 15 idle minutes, so the first visit after that takes about a minute.
 
 ## How it works
 
