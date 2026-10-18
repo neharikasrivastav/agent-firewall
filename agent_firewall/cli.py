@@ -24,6 +24,10 @@ def main(argv: list[str] | None = None) -> None:
     d.add_argument("--host", default="127.0.0.1")
     d.add_argument("--port", type=int, default=8787)
 
+    pg = sub.add_parser("playground", help="start the public web playground (no real tools, no state)")
+    pg.add_argument("--host", default="127.0.0.1")
+    pg.add_argument("--port", type=int, default=8000)
+
     s = sub.add_parser("scan", help="scan text (file or stdin) with the detector and print the verdict")
     s.add_argument("file", nargs="?", help="file to scan (default: stdin)")
     s.add_argument("--sanitize", action="store_true", help="also print the sanitized text")
@@ -55,6 +59,12 @@ def main(argv: list[str] | None = None) -> None:
         db = a.db or FirewallConfig.load(a.config).db_path
         print(f"agent-firewall dashboard on http://{a.host}:{a.port}  (db: {db})")
         uvicorn.run(create_app(db), host=a.host, port=a.port, log_level="warning")
+
+    elif a.cmd == "playground":
+        import uvicorn
+
+        print(f"agent-firewall playground on http://{a.host}:{a.port}")
+        uvicorn.run("agent_firewall.playground:app", host=a.host, port=a.port, log_level="warning")
 
     elif a.cmd == "scan":
         from .detector import Detector

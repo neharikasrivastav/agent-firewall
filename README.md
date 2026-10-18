@@ -8,6 +8,8 @@
 - **quarantines poisoned tools**: MCP tool descriptions that carry hidden instructions, and tools whose definitions change after first use ("rug pulls")
 - **logs every decision** to SQLite, with a live approval dashboard
 
+**Try it in the browser:** the [playground](#playground) runs the real detector and policy engine on attack and benign scenarios. [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/neharikasrivastav/agent-firewall)
+
 ```
  agent (Claude Code / Desktop / any MCP client)
    │ MCP
@@ -59,7 +61,8 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
 python demo/run_demo.py          # hijacked agent, with vs without firewall
-pytest                           # 29 tests
+pytest                           # 33 tests
+agent-firewall playground        # web playground -> http://127.0.0.1:8000
 agent-firewall eval              # tuning-set report  -> reports/eval_report.md
 agent-firewall eval --dataset evals/holdout.jsonl --out reports/holdout_report.md
 agent-firewall scan suspicious_page.html --sanitize
@@ -89,6 +92,12 @@ claude mcp add agent-firewall -- "$(pwd)/.venv/bin/agent-firewall" run --config 
 
 For Claude Desktop, add the same command to `claude_desktop_config.json` under `mcpServers`. To see it in action, try the demo workspace (the default `firewall.yaml`). Ask Claude to "summarize https://recipes.example/lasagna" or "check my inbox", then watch the dashboard.
 
+## Playground
+
+`agent_firewall/playground.py` is a small, stateless web app for showing the firewall to people who won't install it. Pick a scenario (poisoned recipe page, phishing email, invisible-Unicode newsletter, white-on-white travel page, or a benign one) or paste your own content, then choose the call a hijacked agent would make next. The page shows the detector's signals, what the model sees after sanitising, and the policy decision. It never runs a real tool and keeps no state between requests, so it's safe to host publicly.
+
+To host it for free, click **Deploy to Render** above (or create a Blueprint from `render.yaml`). The free plan sleeps after 15 idle minutes, so the first visit after that takes about a minute.
+
 ## How it works
 
 **Detector** (`agent_firewall/detector.py`). Each tool output is scanned in layers. Text is first normalised (NFKC, zero-width characters removed). Hidden channels are then pulled out: HTML comments, CSS-hidden elements, `alt`/`meta` text, Unicode tag characters (ASCII smuggling) and base64 blobs. Every channel is checked against ~20 weighted signals (instruction override, role/delimiter spoofing, addressing the AI, secrecy, authority claims, tool steering, exfil phrasing, markdown-image exfil, templated URLs, and others), plus leetspeak and spaced-letter de-obfuscation. Signals combine with a noisy-OR. Each verdict lists the signals that fired, which is what makes the audit log readable. Quoted examples inside text *about* prompt injection are dampened, so security articles don't trip it.
@@ -113,12 +122,13 @@ For Claude Desktop, add the same command to `claude_desktop_config.json` under `
 ## Project layout
 
 ```
-agent_firewall/   detector.py  policy.py  proxy.py  audit.py  dashboard.py  evaluate.py  cli.py
+agent_firewall/   detector.py  policy.py  proxy.py  audit.py  dashboard.py  playground.py  evaluate.py  cli.py
 demo/             victim_server.py (simulated email/web/files), poisoned_server.py, run_demo.py, fixtures/
 evals/            build_dataset.py, build_holdout.py, dataset.jsonl, holdout.jsonl
 reports/          eval + held-out reports (markdown + json)
-tests/            detector, policy, proxy (end-to-end, poisoning, rug pull, approvals), dashboard
+tests/            detector, policy, proxy (end-to-end, poisoning, rug pull, approvals), dashboard, playground
 firewall.yaml     config: upstreams, thresholds, risk rules, policy matrix, allowlist, approvals
+render.yaml       free Render deployment of the playground
 ```
 
 ## Limitations and roadmap

@@ -7,3 +7,4 @@ __pycache__/
 demo/state/
 .pytest_cache/
 .DS_Store
+.claude/
