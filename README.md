@@ -10,6 +10,8 @@
 
 **Live demo: [agent-firewall-lwzj.onrender.com](https://agent-firewall-lwzj.onrender.com)**. Pick an attack (poisoned web page, phishing email, invisible Unicode) and watch the real detector and policy engine stop it. It's on a free plan, so the first visit after a quiet spell takes about a minute to wake up.
 
+**How it works, in detail:** [`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md) walks through one request end to end, explains every detector signal and the scoring, the policy rules, and includes playground exercises with expected results.
+
 ```
  agent (Claude Code / Desktop / any MCP client)
    │ MCP
@@ -99,6 +101,8 @@ For Claude Desktop, add the same command to `claude_desktop_config.json` under `
 To host your own copy for free: [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/neharikasrivastav/agent-firewall) (or create a Blueprint from `render.yaml`). The free plan sleeps after 15 idle minutes, so the first visit after that takes about a minute.
 
 ## How it works
+
+Short version below. The full guide is [`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md).
 
 **Detector** (`agent_firewall/detector.py`). Each tool output is scanned in layers. Text is first normalised (NFKC, zero-width characters removed). Hidden channels are then pulled out: HTML comments, CSS-hidden elements, `alt`/`meta` text, Unicode tag characters (ASCII smuggling) and base64 blobs. Every channel is checked against ~20 weighted signals (instruction override, role/delimiter spoofing, addressing the AI, secrecy, authority claims, tool steering, exfil phrasing, markdown-image exfil, templated URLs, and others), plus leetspeak and spaced-letter de-obfuscation. Signals combine with a noisy-OR. Each verdict lists the signals that fired, which is what makes the audit log readable. Quoted examples inside text *about* prompt injection are dampened, so security articles don't trip it.
 

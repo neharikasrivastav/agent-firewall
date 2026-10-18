@@ -8,3 +8,4 @@ demo/state/
 .pytest_cache/
 .DS_Store
 .claude/
+.venv.nosync/

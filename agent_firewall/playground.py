@@ -179,7 +179,7 @@ footer{color:var(--muted);font-size:12px;margin-top:24px}
 @media(max-width:760px){.grid,.vs{grid-template-columns:1fr}}
 </style></head><body>
 <header><span class="dot"></span><h1>agent-firewall</h1><span class="muted">playground</span><span class="sp"></span>
-<a href="https://github.com/neharikasrivastav/agent-firewall">GitHub</a></header>
+<a href="https://github.com/neharikasrivastav/agent-firewall/blob/main/docs/HOW_IT_WORKS.md">How it works</a>&nbsp;&nbsp;<a href="https://github.com/neharikasrivastav/agent-firewall">GitHub</a></header>
 <main>
 <p class="lead">A <b>prompt-injection firewall</b> for AI agents. It sits between an agent and its tools, scans everything the agent reads, and
 decides whether the agent's next action is allowed, needs a human, or is blocked. Pick a scenario, or paste your own content, and
