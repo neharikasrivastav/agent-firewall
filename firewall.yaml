@@ -1,0 +1,42 @@
+# agent-firewall configuration
+upstreams:
+  - name: workspace
+    command: "{python}"   # = the Python running the firewall
+    args: ["demo/victim_server.py"]
+  - name: calculator          # has a poisoned tool description -> gets quarantined
+    command: "{python}"   # = the Python running the firewall
+    args: ["demo/poisoned_server.py"]
+
+detector:
+  injection_threshold: 0.5    # score >= this -> "injection"
+  suspicious_threshold: 0.25  # score >= this -> "suspicious" (taints, but content passes)
+  llm_judge: false            # true -> borderline cases go to Claude (needs ANTHROPIC_API_KEY)
+  on_injection: sanitize      # sanitize | block | warn
+
+tools:
+  # outputs of these tools are untrusted DATA (they taint the session)
+  untrusted_sources: ["fetch_url", "read_inbox", "read_file", "search_*", "browse_*"]
+  rules:                      # first match wins; otherwise MCP annotations, then default_risk
+    - {match: "fetch_url",   risk: read}
+    - {match: "read_*",      risk: read}
+    - {match: "list_*",      risk: read}
+    - {match: "send_*",      risk: egress}
+    - {match: "http_*",      risk: egress}
+    - {match: "delete_*",    risk: destructive}
+  default_risk: write
+
+policy:
+  # action per risk level, by session taint: clean | untrusted | compromised
+  read:        {clean: allow,   untrusted: allow,   compromised: allow}
+  write:       {clean: allow,   untrusted: approve, compromised: approve}
+  egress:      {clean: allow,   untrusted: approve, compromised: block}
+  destructive: {clean: approve, untrusted: approve, compromised: block}
+  egress_allowlist: ["@acme.com", "https://api.acme.com"]
+  block_tainted_arguments: true
+
+approvals:
+  mode: dashboard             # dashboard (wait for a human) | deny | allow
+  timeout_seconds: 120
+
+audit:
+  db_path: agent_firewall.db
